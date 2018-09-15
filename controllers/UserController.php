@@ -8,7 +8,10 @@ use app\models\UserSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-
+use yii\filters\AccessControl;
+use yii\web\ForbiddenHttpException;
+use app\models\AuthItem;
+use yii\helpers\ArrayHelper;
 /**
  * UserController implements the CRUD actions for Users model.
  */
@@ -26,6 +29,18 @@ class UserController extends Controller
                     'delete' => ['POST'],
                 ],
             ],
+            'access' => [
+                'class'=> AccessControl::className(),
+                'only' => ['update', 'delete'],
+            
+            'rules' => [
+                    [
+                        'allow'=> true,
+                        'actions' => ['update', 'delete'],
+                        'roles' => ['@']
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -35,13 +50,20 @@ class UserController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel = new UserSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        if (Yii::$app->user->can('admin')) 
+        {
+            $searchModel = new UserSearch();
+            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
+            return $this->render('index', [
+                'searchModel' => $searchModel,
+                'dataProvider' => $dataProvider,
+            ]);
+        } else 
+        {
+            throw new ForbiddenHttpException("Access denied");
+        }
+
     }
 
     /**
@@ -52,9 +74,15 @@ class UserController extends Controller
      */
     public function actionView($id)
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
+        if(Yii::$app->user->can('update-user') || Yii::$app->user->identity->id == $id) 
+        {
+            return $this->render('view', [
+                'model' => $this->findModel($id),
+            ]);            
+        } else {
+            throw new ForbiddenHttpException("Access denied");
+        }
+
     }
 
     /**
@@ -65,14 +93,18 @@ class UserController extends Controller
     public function actionCreate()
     {
         $model = new Users();
+        $hashPassword = true;
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+
+            return $this->redirect(['site/index']);
         }
 
+
         return $this->render('create', [
-            'model' => $model,
-        ]);
+            'model' => $model, 
+
+        ]); 
     }
 
     /**
@@ -84,15 +116,28 @@ class UserController extends Controller
      */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if(Yii::$app->user->can('update-user') || Yii::$app->user->identity->id == $id) 
+        {
+            $model = $this->findModel($id);
+
+            $privAdmin = AuthItem::findOne(['name'=> 'admin']);
+            $privUser = AuthItem::findOne(['name'=> 'user']);
+            $authItems = [$privAdmin, $privUser];
+            $authItems = ArrayHelper::map($authItems, 'name', 'name');
+
+            if ($model->load(Yii::$app->request->post()) && $model->save()) {
+                return $this->redirect(['view', 'id' => $model->id]);
+            }
+
+            return $this->render('update', [
+                'model' => $model, 'authItems' => $authItems
+            ]);            
+        } else {
+
+            throw new ForbiddenHttpException("Access denied");
         }
 
-        return $this->render('update', [
-            'model' => $model,
-        ]);
     }
 
     /**
@@ -104,9 +149,16 @@ class UserController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        if (Yii::$app->user->can('delete-user'))
+        {
+            $this->findModel($id)->delete();
 
-        return $this->redirect(['index']);
+            return $this->redirect(['index']);
+        } else 
+        {
+            throw new ForbiddenHttpException("Action denied");
+        }
+
     }
 
     /**

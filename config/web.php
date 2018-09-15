@@ -20,7 +20,7 @@ $config = [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
+            'identityClass' => 'app\models\Users',
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
@@ -32,6 +32,9 @@ $config = [
             // 'useFileTransport' to false and configure a transport
             // for the mailer to send real emails.
             'useFileTransport' => true,
+        ],
+        'security' => [
+            'passwordHashStrategy' => 'password_hash'
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
@@ -48,9 +51,13 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                'register' => 'user/create'
             ],
         ],
-        
+        'authManager' => [
+            'class'=> 'yii\rbac\DBManager',
+            'defaultRoles' => ['guest'],
+        ],
     ],
     'params' => $params,
 ];
