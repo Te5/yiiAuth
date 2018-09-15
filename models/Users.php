@@ -87,13 +87,9 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
 
     public function validatePassword($password)
     {
-        echo $password . '<br>';
-        echo $this->password . '<br>';
-        echo Yii::$app->security->validatePassword($password, $this->password);
-        echo Yii::$app->security->validatePassword('123', '$2y$10$/4TnYA1mdt3MYTcyC0iu0O5Sr06xqaXt0nT4JYzWcylQ/iTEthC/C');
-        die();
+
         return Yii::$app->security->validatePassword($password, $this->password);
-        /*return $password === $this->password;*/
+
     }               
 
     public static function findByLogin($login) 

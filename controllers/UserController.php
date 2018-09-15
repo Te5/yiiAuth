@@ -117,7 +117,7 @@ class UserController extends Controller
     public function actionUpdate($id)
     {
 
-        if(Yii::$app->user->can('update-user') || Yii::$app->user->identity->id == $id) 
+        if(Yii::$app->user->can('admin')) 
         {
             $model = $this->findModel($id);
 
@@ -133,8 +133,15 @@ class UserController extends Controller
             return $this->render('update', [
                 'model' => $model, 'authItems' => $authItems
             ]);            
-        } else {
+        } else if (Yii::$app->user->identity->id == $id)
 
+        {
+            return $this->render('_form-update-self', [
+                'model' => $model
+            ]);
+            
+        } else 
+        {
             throw new ForbiddenHttpException("Access denied");
         }
 

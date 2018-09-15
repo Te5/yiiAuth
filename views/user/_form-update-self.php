@@ -18,8 +18,8 @@ use yii\widgets\ActiveForm;
     <?= $form->field($model, 'email')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'username')->textInput(['maxlength' => true]) ?>
-	    <?= $form->field($model, 'password')->passwordInput(['maxlength' => true]) ?>
-    <?= $form->field($model, 'permissions')->radioList($authItems) ?>
+
+    <?= $form->field($model, 'password')->passwordInput(['maxlength' => true])->hint('6 char minimun') ?>
     <div class="form-group">
         <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
     </div>
