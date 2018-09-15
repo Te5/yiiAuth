@@ -87,9 +87,13 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
 
     public function validatePassword($password)
     {
-
-        return \Yii::$app->security->validatePassword($password, $this->password);
-
+        echo $password . '<br>';
+        echo $this->password . '<br>';
+        echo Yii::$app->security->validatePassword($password, $this->password);
+        echo Yii::$app->security->validatePassword('123', '$2y$10$/4TnYA1mdt3MYTcyC0iu0O5Sr06xqaXt0nT4JYzWcylQ/iTEthC/C');
+        die();
+        return Yii::$app->security->validatePassword($password, $this->password);
+        /*return $password === $this->password;*/
     }               
 
     public static function findByLogin($login) 
@@ -100,8 +104,8 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
     public function beforeSave($insert) 
     {
         if(parent::beforeSave($insert)) {
-
-            if($this->hashPassword) 
+            
+            if(!$this->hashPassword) 
             {
                 $this->password = Yii::$app->security->generatePasswordHash($this->password, 10);
             }
