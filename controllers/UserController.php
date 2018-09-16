@@ -96,7 +96,7 @@ class UserController extends Controller
         $model->hashPassword = true;
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-
+            $model->addPerm();
             return $this->redirect(['site/index']);
         }
 

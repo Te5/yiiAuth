@@ -14,7 +14,6 @@ use app\models\AuthAssignment;
  * @property string $username
  * @property string $password
  * @property string $authKey
- * @property string $privileges
  */
 class Users extends \yii\db\ActiveRecord implements IdentityInterface {
     public $hashPassword = false;
@@ -34,7 +33,6 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
     {
         return [
             [['login', 'email', 'username', 'password',], 'required'],
-            [['privileges'], 'string'],
             [['login', 'email', 'username', 'password', 'authKey'], 'string', 'max' => 64],
             [['username'], 'unique'],
             //добавить regexp
@@ -54,7 +52,6 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
             'username' => 'Username',
             'password' => 'Password',
             'authKey' => 'Auth Key',
-            'privileges' => 'Privileges',
         ];
     }
 
@@ -104,10 +101,10 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
             if($this->hashPassword) 
             {
                 $this->password = Yii::$app->security->generatePasswordHash($this->password, 10);
-                 
+
             }
 
-//          Добавляем пользователю выбранную роль
+//          Добавляем пользователю выбранную роль при update
             if (isset($_POST['Users']['permissions'])) 
             {
             $permList = $_POST['Users']['permissions'];
@@ -118,12 +115,20 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
             $newPerm->user_id = $this->id;
             $newPerm->item_name = $_POST['Users']['permissions'];
             $newPerm->save();
-
             }
 
             return true; 
         } else {
             return false;
         }
+    }
+
+    public function addPerm() 
+    {
+
+                $userPerm = new AuthAssignment;
+                $userPerm->user_id = $this->id;
+                $userPerm->item_name = 'user';
+                $userPerm->save();   
     }
 }
