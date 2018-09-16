@@ -93,7 +93,7 @@ class UserController extends Controller
     public function actionCreate()
     {
         $model = new Users();
-        $hashPassword = true;
+        $model->hashPassword = true;
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 
@@ -104,7 +104,7 @@ class UserController extends Controller
         return $this->render('create', [
             'model' => $model, 
 
-        ]); 
+        ]);
     }
 
     /**
@@ -120,7 +120,7 @@ class UserController extends Controller
         if(Yii::$app->user->can('admin')) 
         {
             $model = $this->findModel($id);
-
+            $model->hashPassword = true;
             $privAdmin = AuthItem::findOne(['name'=> 'admin']);
             $privUser = AuthItem::findOne(['name'=> 'user']);
             $authItems = [$privAdmin, $privUser];

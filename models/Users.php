@@ -101,9 +101,10 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
     {
         if(parent::beforeSave($insert)) {
             
-            if(!$this->hashPassword) 
+            if($this->hashPassword) 
             {
                 $this->password = Yii::$app->security->generatePasswordHash($this->password, 10);
+                 
             }
 
 //          Добавляем пользователю выбранную роль
