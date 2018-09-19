@@ -14,6 +14,7 @@ use app\models\AuthAssignment;
  * @property string $username
  * @property string $password
  * @property string $authKey
+ * @property binary $active 
  */
 class Users extends \yii\db\ActiveRecord implements IdentityInterface {
     public $hashPassword = false;
@@ -21,6 +22,9 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
     /**
      * {@inheritdoc}
      */
+    const STATUS_DELETED = 0;
+    const STATUS_NOT_ACTIVE = 1;
+    const STATUS_ACTIVE = 10;
     public static function tableName()
     {
         return 'users';
@@ -34,7 +38,7 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
         return [
             [['login', 'email', 'username', 'password',], 'required'],
             [['login', 'email', 'username', 'password', 'authKey'], 'string', 'max' => 64],
-            [['username'], 'unique'],
+            [['username', 'authKey'], 'unique'],
             //добавить regexp
 
         ];
@@ -131,4 +135,40 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
                 $userPerm->item_name = 'user';
                 $userPerm->save();   
     }
+
+    public static function isAuthKeyExpire($key) 
+    {
+        if(empty($key)) 
+        {
+            return false;
+        }
+        $expire = Yii::$app->params['authKeyExpire'];
+        $parts = explode('_', $key);
+        $timestamp = (int) end($parts);
+        return $timestamp + $expire >= time();
+    }
+
+    public static function findByAuthKey($key) 
+    {
+        if(!static::isAuthKeyExpire($key)) 
+        {
+            return null;
+        }
+        return static::findOne(['authKey'=>$key]);
+    }
+
+    public function generateAuthKey() 
+    {
+        $this->authKey = Yii::$app->security->generateRandomString().'_'.time();
+    }
+
+    public function removeAuthKey() 
+    {
+        $this->authKey = null;
+    }
+
+    public function setPassword($password)
+    {
+        $this->password = Yii::$app->security->generatePasswordHash($password, 10);
+    }    
 }

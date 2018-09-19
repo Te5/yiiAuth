@@ -12,6 +12,8 @@ use yii\filters\AccessControl;
 use yii\web\ForbiddenHttpException;
 use app\models\AuthItem;
 use yii\helpers\ArrayHelper;
+use yii\base\InvalidParamException;
+use yii\web\BadRequestHttpException;
 /**
  * UserController implements the CRUD actions for Users model.
  */
@@ -97,6 +99,8 @@ class UserController extends Controller
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             $model->addPerm();
+            //мейл с проверочной ссылкой
+            Yii::$app->mailer->compose('register', compact('model'))->setFrom('myyiiserver@gmail.com')->setTo('kartsianovich@gmail.com')->setSubject('Welcome to the Yiisite!')->send();
             return $this->redirect(['site/index']);
         }
 
@@ -136,6 +140,7 @@ class UserController extends Controller
         } else if (Yii::$app->user->identity->id == $id)
 
         {
+            $model = $this->findModel($id);
             return $this->render('_form-update-self', [
                 'model' => $model
             ]);
@@ -183,4 +188,54 @@ class UserController extends Controller
 
         throw new NotFoundHttpException('The requested page does not exist.');
     }
+
+    public function actionSendEmail()
+    {
+        $model = new \app\models\SendEmailForm();
+
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate()) {
+                if($model->sendEmail()) 
+                {
+                    Yii::$app->getSession()->setFlash('warning', 'Check your email');
+                    return $this->goHome();
+                } else 
+                {
+
+                    Yii::$app->getSession()->setFlash('error', 'Some error just occured.');
+                }
+            }
+        }
+
+        return $this->render('SendEmail', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionRetreivePasswordForm($key)
+    {
+
+        try 
+        {
+            $model = new \app\models\RetreivePasswordForm($key);
+        }
+
+        catch (InvalidParamException $e)
+        {
+            throw new BadRequestHttpException($e->getMessage());
+        }
+        
+
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate() && $model->resetPassword()) {
+                Yii::$app->getSession()->setFlash('warning', 'Password is successfully changed');
+                return $this->redirect(['../site/login']);
+            }
+        }
+
+        return $this->render('RetreivePasswordForm', [
+            'model' => $model,
+        ]);
+    }
+
 }
