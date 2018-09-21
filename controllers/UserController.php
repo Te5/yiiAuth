@@ -11,9 +11,13 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\ForbiddenHttpException;
 use app\models\AuthItem;
+use app\models\AccountActivation;
 use yii\helpers\ArrayHelper;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
+use yii\helpers\Html;
+use yii\helpers\Url;
+
 /**
  * UserController implements the CRUD actions for Users model.
  */
@@ -94,13 +98,20 @@ class UserController extends Controller
      */
     public function actionCreate()
     {
-        $model = new Users();
+        $emailActivation = Yii::$app->params['emailActivation'];
+        $model = $emailActivation? new Users(['scenario'=>'emailActivation']) : new Users();
         $model->hashPassword = true;
-
+        $model->generateAuthKey();
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            $model->addPerm();
-            //мейл с проверочной ссылкой
-            Yii::$app->mailer->compose('register', compact('model'))->setFrom('myyiiserver@gmail.com')->setTo('kartsianovich@gmail.com')->setSubject('Welcome to the Yiisite!')->send();
+            /*$model->addPerm(); // добавляет права пользователя*/
+
+            if($model->sendActivationEmail($model)) 
+            {
+              Yii::$app->session->setFlash('success', 'Activation email was sent to '.Html::encode($model->email));                
+            } else 
+            {
+                Yii::$app->session->setFlash('error', 'Error. Message was not send');
+            }
             return $this->redirect(['site/index']);
         }
 
@@ -237,5 +248,23 @@ class UserController extends Controller
             'model' => $model,
         ]);
     }
-
+    public function actionActivateAccount($key) 
+    {
+        try 
+        {
+            $user = new AccountActivation($key);
+        } catch(InvalidParamException $e) 
+        {
+            throw new BadRequestHttpException($e ->getMessage());
+        }
+        if($user->activateAccount()) 
+        {
+            Yii::$app->session->setFlash('success', 'Your account has been successfully activated. You may use your credentials to log in');
+        } else 
+        {
+            Yii::$app->session->setFlash('error', 'Error while trying to activate your account');
+            Yii::error('Error while trying to activate');
+        }
+        return $this->redirect(Url::to(['site/login']));
+    }
 }

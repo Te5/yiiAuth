@@ -39,6 +39,7 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
             [['login', 'email', 'username', 'password',], 'required'],
             [['login', 'email', 'username', 'password', 'authKey'], 'string', 'max' => 64],
             [['username', 'authKey'], 'unique'],
+            ['active', 'default', 'value'=> 0, 'on'=> 'emailActivation']
             //добавить regexp
 
         ];
@@ -171,4 +172,15 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
     {
         $this->password = Yii::$app->security->generatePasswordHash($password, 10);
     }    
+
+    public function sendActivationEmail($model) 
+    {
+        return Yii::$app->mailer
+                    ->compose('activationEmail', compact('model'))
+                    ->setFrom([Yii::$app->params['supportEmail'] => Yii::$app->name.'(sent automatically)'])
+                    ->setTo($this->email)
+                    ->setSubject('Account activation for '. Yii::$app->name)
+                    ->send();
+                    return true;
+    }
 }
