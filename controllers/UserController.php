@@ -17,6 +17,8 @@ use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\helpers\Html;
 use yii\helpers\Url;
+use app\models\Auth;
+use app\models\AuthAssignment;
 
 /**
  * UserController implements the CRUD actions for Users model.
@@ -49,7 +51,15 @@ class UserController extends Controller
             ],
         ];
     }
-
+    public function actions()
+    {
+        return [
+            'auth' => [
+                'class' => 'yii\authclient\AuthAction',
+                'successCallback' => [$this, 'AuthHandler'],
+            ],
+        ];
+    }
     /**
      * Lists all Users models.
      * @return mixed
@@ -80,7 +90,7 @@ class UserController extends Controller
      */
     public function actionView($id)
     {
-        if(Yii::$app->user->can('update-user') || Yii::$app->user->identity->id == $id) 
+        if(Yii::$app->user->can('admin') || Yii::$app->user->identity->id == $id) 
         {
             return $this->render('view', [
                 'model' => $this->findModel($id),
@@ -98,6 +108,7 @@ class UserController extends Controller
      */
     public function actionCreate()
     {
+
         $emailActivation = Yii::$app->params['emailActivation'];
         $model = $emailActivation? new Users(['scenario'=>'emailActivation']) : new Users();
         $model->hashPassword = true;
@@ -121,7 +132,10 @@ class UserController extends Controller
 
         ]);
     }
-
+    public function actionOauth($model) 
+    {
+        return $this->render('oauth', compact('model'));
+    }
     /**
      * Updates an existing Users model.
      * If update is successful, the browser will be redirected to the 'view' page.
@@ -172,10 +186,15 @@ class UserController extends Controller
      */
     public function actionDelete($id)
     {
-        if (Yii::$app->user->can('delete-user'))
+        if (Yii::$app->user->can('admin') || Yii::$app->user->identity->id == $id )
         {
-            $this->findModel($id)->delete();
+            if(Auth::findIdentity($id)) 
+            {
+                Auth::findIdentity($id)->delete();
+            }
 
+            AuthAssignment::findAssignment($id)->delete();
+            $this->findModel($id)->delete();
             return $this->redirect(['index']);
         } else 
         {
@@ -203,9 +222,10 @@ class UserController extends Controller
     public function actionSendEmail()
     {
         $model = new \app\models\SendEmailForm();
-
+        
         if ($model->load(Yii::$app->request->post())) {
             if ($model->validate()) {
+
                 if($model->sendEmail()) 
                 {
                     Yii::$app->getSession()->setFlash('warning', 'Check your email');
@@ -267,4 +287,11 @@ class UserController extends Controller
         }
         return $this->redirect(Url::to(['site/login']));
     }
+
+ 
+    public function oAuthSuccess($client) 
+    {
+        (new AuthHandler($client))->handle();
+
+    }    
 }

@@ -19,10 +19,15 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'username')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'password')->passwordInput(['maxlength' => true])->hint('6 char minimun') ?>
-    <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
-    </div>
+    <?= $form->field($model, 'password')->passwordInput(['maxlength' => true])->hint('6 characters minimun and two special characters') ?>
+    
+    <p align="center"> Or register via social networks:</p>
+    </p><?= yii\authclient\widgets\AuthChoice::widget([
+             'baseAuthUrl' => ['site/auth']
+    ]) ?>           
+
+        <?= Html::submitButton('Create an account', ['class' => 'btn btn-success']) ?>
+
 
     <?php ActiveForm::end(); ?>
 

@@ -69,4 +69,8 @@ class AuthAssignment extends \yii\db\ActiveRecord
         }
     }    
 
+    public static function findAssignment($user_id)
+    {
+        return self::findOne(['user_id'=> $user_id]);
+    } 
 }

@@ -53,7 +53,7 @@ class SendEmailForm extends Model
     		        ->compose('resetPassword', compact('user'))
     		        ->setFrom([Yii::$app->params['supportEmail'] => Yii::$app->name.'(sent automatically)'])
     		        ->setTo($this->email)
-    		        ->setSubject('Password retreive for '. Yii::$app->name)
+    		        ->setSubject('Password reset for '. Yii::$app->name)
     		        ->send();
     		        return true;
     		}    	

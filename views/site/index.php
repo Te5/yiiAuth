@@ -5,7 +5,15 @@
 $this->title = 'My Yii Application';
 ?>
 <div class="site-index">
-
+    <?php
+    $flashes = Yii::$app->session->getAllFlashes();
+        if($flashes) 
+    {
+       foreach ($flashes as $flash) {
+           $flash;
+       }
+    }
+    ?>
     <div class="jumbotron">
         <h1>Congratulations!</h1>
 

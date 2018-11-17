@@ -31,6 +31,7 @@ class RetreivePasswordForm extends Model
 
         return [
             ['password', 'required'],
+            ['password', 'match', 'pattern' => '/^(?=.*?[#$%&\'()*+,-.\/:;<=>?@[\]^_`{|}~].*?[#$%&\'()*+,-.\/:;<=>?@[\]^_`{|}~])(?=.*[0-9])[0-9a-zA-Z!@#$%0-9]{6,}$/', 'message'=> 'Password should be at least characters long and contain two special characters'],
         ];
     }
 
@@ -49,4 +50,6 @@ class RetreivePasswordForm extends Model
         $user->removeAuthKey();
         return $user->save();
     }
+
+
 }

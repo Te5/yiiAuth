@@ -66,7 +66,41 @@ $config = [
             'class'=> 'yii\rbac\DBManager',
             'defaultRoles' => ['guest'],
         ],
-    ],
+    'authClientCollection' => [
+      'class' => 'yii\authclient\Collection',
+      'clients' => [
+        'facebook' => [
+          'class' => 'yii\authclient\clients\Facebook',
+          'authUrl' => 'https://www.facebook.com/dialog/oauth?display=popup',
+          'clientId' => '582824695467362',
+          'clientSecret' => 'ac98700106c38769050351934f9dd0ab',
+          'attributeNames' => ['name', 'email', 'first_name', 'last_name'],
+
+        ],
+        'vkontakte' => [
+                'class' => 'yii\authclient\clients\VKontakte',
+                'clientId' => '6700393',
+                'clientSecret' => 'g9sMBVpo7b6IPTqspji7',
+                'authUrl' => 'https://oauth.vk.com/authorize?client_id=1&redirect_uri=https://google.com',
+                'attributeNames' => ['name', 'email', 'first_name', 'last_name'],
+            ],
+            'google' => [
+                'class' => 'yii\authclient\clients\Google',
+                'clientId' => '142230693951-1qkvjqm53oruin69dn9r0rr0m6k3ibpp.apps.googleusercontent.com',
+                'clientSecret' => '1OxU1-lwKPUDvYB6WZ6cp2uN',
+            ],
+            'twitter' => [
+                'class' => 'yii\authclient\clients\Twitter',
+                'attributeParams' => [
+                    'include_email' => 'true'
+                ],
+                'consumerKey' => 'RucoamXAjPHx8hQZZivxtq3T3',
+                'consumerSecret' => '3Ak0t0NmZCb9v6V31ebQ7nPQohGmr2Plikou7ezffdixhXcMcy',
+            ],            
+        ],        
+      ],
+    ],        
+    
     'params' => $params,
 ];
 

@@ -9,7 +9,7 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
-
+use app\components\AuthHandler;
 
 class SiteController extends Controller
 {
@@ -45,6 +45,10 @@ class SiteController extends Controller
     public function actions()
     {
         return [
+            'auth' => [
+                'class' => 'yii\authclient\AuthAction',
+                'successCallback' => [$this, 'oAuthSuccess'],
+            ],
             'error' => [
                 'class' => 'yii\web\ErrorAction',
             ],
@@ -127,5 +131,44 @@ class SiteController extends Controller
     public function actionAbout()
     {
         return $this->render('about');
+
     }
+
+    public function oAuthSuccess($client) 
+    {
+/*        $userAttributes = $client->getUserAttributes();
+        $client_name = $client->getName(); // через что логинимся
+
+        switch ($client_name) {
+            case 'facebook':
+                $name = $userAttributes['name'];
+                $email = $userAttributes['email'];
+                break;
+            case 'vkontakte':
+                $name = $userAttributes['first_name'] . ' ' . $userAttributes['last_name'];
+                break;
+            case 'google':
+                $name = $userAttributes['displayName'];
+                break;
+
+            case 'twitter':
+                $name = $userAttributes['name'];
+                break;
+            
+        }
+        if (!Yii::$app->user->isGuest) {
+            return $this->goHome();
+        }
+
+        $model = new LoginForm();
+        if ($model->load(Yii::$app->request->post()) && $model->login()) 
+        {
+            Yii::$app->session->setFlash('success', 'Logged in successfully');
+        } else 
+        {
+
+            Yii::$app->session->setFlash('error', 'User doesn`t exist.');           
+        }*/
+        (new AuthHandler($client))->handle();
+    }    
 }

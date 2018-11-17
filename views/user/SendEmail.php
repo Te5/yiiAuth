@@ -8,14 +8,14 @@ use yii\widgets\ActiveForm;
 /* @var $form ActiveForm */
 ?>
 <div class="user-SendEmail">
-<h4 align="center">In order to restore your password, please, provide below email adress which you used while registering account.
+<h4 align="center">Recover Password
 </h4>
     <?php $form = ActiveForm::begin(); ?>
 
-        <?= $form->field($model, 'email') ?>
+        <?= $form->field($model, 'email')->label('Email adress') ?>
     
         <div class="form-group">
-            <?= Html::submitButton('Submit', ['class' => 'btn btn-primary']) ?>
+            <?= Html::submitButton('Recover Password', ['class' => 'btn btn-primary']) ?>
         </div>
     <?php ActiveForm::end(); ?>
 

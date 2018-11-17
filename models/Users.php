@@ -22,9 +22,7 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
     /**
      * {@inheritdoc}
      */
-    const STATUS_DELETED = 0;
-    const STATUS_NOT_ACTIVE = 1;
-    const STATUS_ACTIVE = 10;
+
     public static function tableName()
     {
         return 'users';
@@ -36,11 +34,13 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface {
     public function rules()
     {
         return [
-            [['login', 'email', 'username', 'password',], 'required'],
+            [['login', 'email', 'username', 'password'], 'required'],
+            [['username'], 'required', 'on' => 'oAuthRegister'],
             [['login', 'email', 'username', 'password', 'authKey'], 'string', 'max' => 64],
             [['username', 'authKey'], 'unique'],
-            ['active', 'default', 'value'=> 0, 'on'=> 'emailActivation']
-            //добавить regexp
+            ['active', 'default', 'value'=> 0, 'on'=> 'emailActivation'],
+            ['password', 'match', 'pattern' => '/^(?=.*?[#$%&\'()*+,-.\/:;<=>?@[\]^_`{|}~].*?[#$%&\'()*+,-.\/:;<=>?@[\]^_`{|}~])(?=.*[0-9])[0-9a-zA-Z!@#$%0-9]{6,}$/', 'message'=> 'Password should be at least characters long and contain two special characters', 'on'=> 'emailActivation' ]
+
 
         ];
     }
